@@ -79,13 +79,24 @@ npm run dev
 
 ## Screenshots
 
-Add screenshots of:
 
-* Login Page
-  ![Login](./screenshots/login.png)
-* Registration Page
-* Chat Interface
-* Real-Time Messaging
+
+
+### Login Page
+
+![Login](./screenshots/login.png)
+
+### Registration Page
+
+![Signup](./screenshots/signup.png)
+
+### Chat Interface
+
+![Chat](./screenshots/chat.png)
+
+### Calling Feature
+
+![Calling](./screenshots/calling.png)
 
 ## Future Improvements
 
