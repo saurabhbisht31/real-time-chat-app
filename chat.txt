@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const API_URL = "https://ubiquitous-spoon-96qvpvj799fx544-5000.app.github.dev";
 const socket = io(API_URL, { transports: ["websocket"], reconnection: false });
 
 const COLORS = ["#8B5CF6", "#EC4899", "#06B6D4", "#F59E0B", "#10B981", "#EF4444", "#3B82F6", "#F97316"];
@@ -212,7 +211,6 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif}
 `;
 
 export default function Chat() {
-  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem("user")));
 
@@ -746,21 +744,6 @@ export default function Chat() {
   const filteredUsers = sortChats(users.filter(u => u.name.toLowerCase().includes(search.toLowerCase())));
   const filteredGroups = sortChats(groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase())));
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-
-  if (currentUser) {
-    socket.emit("logout_user", currentUser.name);
-  }
-
-  navigate("/login");
-};
-
-
-
-
-  
   return (
     <div className="app">
       <style>{styles}</style>
@@ -928,21 +911,7 @@ const handleLogout = () => {
               <div className="me-label">Logged Account</div>
               <div className="me-name">{currentUser.statusEmoji || "💬"} {currentUser.name}</div>
             </div>
-           <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
-  <button
-    className="logout"
-    onClick={() => setShowProfileConfig(!showProfileConfig)}
-  >
-    ⚙️ Profile
-  </button>
-
-  <button
-    className="logout"
-    onClick={handleLogout}
-  >
-    Logout
-  </button>
-</div>
+            <button className="logout" style={{marginLeft:"auto"}} onClick={() => setShowProfileConfig(!showProfileConfig)}>⚙️ Profile</button>
           </div>
 
           {showProfileConfig && (
