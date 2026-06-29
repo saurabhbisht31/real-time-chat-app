@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
 
@@ -211,6 +212,7 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif}
 `;
 
 export default function Chat() {
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem("user")));
 
@@ -744,6 +746,21 @@ export default function Chat() {
   const filteredUsers = sortChats(users.filter(u => u.name.toLowerCase().includes(search.toLowerCase())));
   const filteredGroups = sortChats(groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase())));
 
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  if (currentUser) {
+    socket.emit("logout_user", currentUser.name);
+  }
+
+  navigate("/login");
+};
+
+
+
+
+  
   return (
     <div className="app">
       <style>{styles}</style>
@@ -911,7 +928,21 @@ export default function Chat() {
               <div className="me-label">Logged Account</div>
               <div className="me-name">{currentUser.statusEmoji || "💬"} {currentUser.name}</div>
             </div>
-            <button className="logout" style={{marginLeft:"auto"}} onClick={() => setShowProfileConfig(!showProfileConfig)}>⚙️ Profile</button>
+           <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
+  <button
+    className="logout"
+    onClick={() => setShowProfileConfig(!showProfileConfig)}
+  >
+    ⚙️ Profile
+  </button>
+
+  <button
+    className="logout"
+    onClick={handleLogout}
+  >
+    Logout
+  </button>
+</div>
           </div>
 
           {showProfileConfig && (
