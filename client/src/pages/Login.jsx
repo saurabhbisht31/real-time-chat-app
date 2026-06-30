@@ -10,7 +10,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "https://ubiquitous-spoon-96qvpvj799fx544-5000.app.github.dev/api/auth/login",
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
         { email, password }
       );
 

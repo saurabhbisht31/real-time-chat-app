@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const API_URL = "https://ubiquitous-spoon-96qvpvj799fx544-5000.app.github.dev";
+const API_URL =  import.meta.env.VITE_API_URL;
 const socket = io(API_URL, { transports: ["websocket"], reconnection: false });
 
 const COLORS = ["#8B5CF6", "#EC4899", "#06B6D4", "#F59E0B", "#10B981", "#EF4444", "#3B82F6", "#F97316"];
