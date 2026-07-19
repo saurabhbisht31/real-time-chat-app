@@ -15,6 +15,19 @@ const getMessages = async (req, res) => {
       })
         .populate("replyTo")
         .sort({ createdAt: 1 });
+
+      if (!messages.length) {
+        messages = await Message.find({
+          $or: [
+            { sender: sender, receiver: receiver },
+            { sender: receiver, receiver: sender },
+            { sender: sender, receiver: receiver, deletedFor: { $ne: sender } },
+            { sender: receiver, receiver: sender, deletedFor: { $ne: sender } },
+          ],
+        })
+          .populate("replyTo")
+          .sort({ createdAt: 1 });
+      }
     } else {
       messages = await Message.find()
         .populate("replyTo")
