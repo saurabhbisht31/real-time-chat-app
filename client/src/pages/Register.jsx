@@ -11,7 +11,7 @@ function Register() {
 
     try {
       await axios.post(
-        "https://ubiquitous-spoon-96qvpvj799fx544-5000.app.github.dev/api/auth/register",
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
         { name, email, password }
       );
 
