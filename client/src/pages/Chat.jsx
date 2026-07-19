@@ -287,6 +287,7 @@ export default function Chat() {
 
   const [activeTab, setActiveTab] = useState("chats");
   const [isMobileView, setIsMobileView] = useState(false);
+  const [mobileView, setMobileView] = useState("list");
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -361,14 +362,20 @@ export default function Chat() {
     const updateView = () => {
       const mobile = window.innerWidth <= 980;
       setIsMobileView(mobile);
-      if (!mobile) setShowMobileSidebar(true);
-      else setShowMobileSidebar(false);
+
+      if (!mobile) {
+        setShowMobileSidebar(false);
+        setMobileView("desktop");
+      } else {
+        setShowMobileSidebar(Boolean(!selectedUser && !selectedGroup));
+        setMobileView(selectedUser || selectedGroup ? "chat" : "list");
+      }
     };
 
     updateView();
     window.addEventListener("resize", updateView);
     return () => window.removeEventListener("resize", updateView);
-  }, []);
+  }, [selectedUser, selectedGroup]);
 
   const ensureAudioContext = () => {
     if (typeof window === "undefined") return null;
@@ -484,7 +491,7 @@ export default function Chat() {
       }
       setUnreadCounts(ic);
 
-      if (!selectedUser && filtered.length > 0) {
+      if (!selectedUser && filtered.length > 0 && window.innerWidth > 980) {
         try {
           const savedSelection = localStorage.getItem("lastSelectedChatUser");
           if (savedSelection) {
@@ -1080,7 +1087,7 @@ const handleLogout = () => {
       )}
 
       {/* SIDEBAR */}
-      <div className={`sidebar ${showMobileSidebar ? "open" : ""}`}>
+      <div className={`sidebar ${isMobileView && showMobileSidebar ? "open" : ""}`} style={isMobileView ? { display: mobileView === "list" ? "flex" : "none" } : undefined}>
         <div className="sidebar-top">
           <div className="brand" style={{ justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1151,7 +1158,7 @@ const handleLogout = () => {
             const isPinned = currentUser?.pinnedChats?.includes(u.name);
             const isMuted = currentUser?.mutedChats?.includes(u.name);
             return (
-              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => { setSelectedUser(u); if (isMobileView) setShowMobileSidebar(false); }}>
+              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => { setSelectedUser(u); if (isMobileView) { setShowMobileSidebar(false); setMobileView("chat"); } }}>
                 <div className="av">
                   {renderAvatar(u.name, u.avatar, 40)}
                   <div className={`status-ring ${userIsOnline ? "online" : "offline"}`}></div>
@@ -1218,11 +1225,12 @@ const handleLogout = () => {
       </div>
 
       {/* MAIN CHAT WINDOW CONTAINER */}
-      {activeContact ? (
-        <div className="chat-area">
+      {(activeContact || !isMobileView) && (
+        activeContact ? (
+        <div className="chat-area" style={isMobileView ? { display: mobileView === "chat" ? "flex" : "none" } : undefined}>
           <div className="chat-head">
             {isMobileView && (
-              <button className="mobile-nav-btn" onClick={() => setShowMobileSidebar(true)} aria-label="Open chats">☰</button>
+              <button className="mobile-nav-btn" onClick={() => { setShowMobileSidebar(true); setMobileView("list"); }} aria-label="Back to chats">←</button>
             )}
             <div>
               <div className="head-name">{selectedGroup ? `👥 ${selectedGroup.name}` : `👤 ${selectedUser.name}`}</div>
@@ -1381,12 +1389,13 @@ const handleLogout = () => {
             </div>
           </div>
         </div>
-      ) : (
-        <div className="empty">
-          <div className="empty-icon">📡</div>
-          <div className="empty-title">No Active Stream Target Selected</div>
-          <div className="empty-sub">Choose a room connection listing from the primary sidebar directory listing array.</div>
-        </div>
+        ) : (
+          <div className="empty">
+            <div className="empty-icon">📡</div>
+            <div className="empty-title">No Active Stream Target Selected</div>
+            <div className="empty-sub">Choose a room connection listing from the primary sidebar directory listing array.</div>
+          </div>
+        )
       )}
     </div>
   );
