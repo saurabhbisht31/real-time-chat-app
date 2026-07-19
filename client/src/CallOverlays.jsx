@@ -66,7 +66,7 @@ export const ActiveCall = ({ localStream, remoteStream, callState, isVideo, isMu
 
 const styles = {
   overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(6,6,15,0.85)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999, backdropFilter: "blur(10px)" },
-  modal: { background: "linear-gradient(135deg, #0D0D1A 0%, #12122A 100%)", padding: "32px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(124,58,237,0.25)", color: "#F0EEFF", minWidth: "320px", boxShadow: "0 18px 40px rgba(0,0,0,0.35)" },
+  modal: { background: "linear-gradient(135deg, #0D0D1A 0%, #12122A 100%)", padding: "24px 20px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(124,58,237,0.25)", color: "#F0EEFF", width: "min(92vw, 360px)", boxShadow: "0 18px 40px rgba(0,0,0,0.35)" },
   pulseDot: { width: 12, height: 12, borderRadius: "50%", background: "#10B981", boxShadow: "0 0 0 8px rgba(16,185,129,0.16)", margin: "0 auto 12px auto", animation: "pulse 1.2s ease-in-out infinite" },
   eyebrow: { textTransform: "uppercase", letterSpacing: "0.24em", fontSize: "10px", color: "#C084FC", marginBottom: "8px" },
   title: { fontSize: "24px", fontWeight: 700, margin: 0 },
@@ -76,7 +76,7 @@ const styles = {
   acceptBtn: { background: "linear-gradient(135deg, #10B981, #34D399)", color: "#fff", boxShadow: "0 8px 18px rgba(16,185,129,0.25)" },
   rejectBtn: { background: "linear-gradient(135deg, #EF4444, #F87171)", color: "#fff", boxShadow: "0 8px 18px rgba(239,68,68,0.25)" },
   fullscreenContainer: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(6,6,15,0.96)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9998, backdropFilter: "blur(10px)" },
-  callCard: { background: "linear-gradient(135deg, #0D0D1A 0%, #12122A 100%)", padding: "32px", borderRadius: "24px", border: "1px solid rgba(124,58,237,0.25)", color: "#fff", textAlign: "center", minWidth: "340px", boxShadow: "0 20px 40px rgba(0,0,0,0.35)" },
+  callCard: { background: "linear-gradient(135deg, #0D0D1A 0%, #12122A 100%)", padding: "24px 18px", borderRadius: "24px", border: "1px solid rgba(124,58,237,0.25)", color: "#fff", textAlign: "center", width: "min(92vw, 480px)", boxShadow: "0 20px 40px rgba(0,0,0,0.35)" },
   headerRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "18px" },
   peerName: { fontSize: "22px", fontWeight: 700, margin: 0 },
   durationBadge: { background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.35)", color: "#C084FC", padding: "8px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 600 },

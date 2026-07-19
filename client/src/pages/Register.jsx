@@ -28,14 +28,15 @@ function Register() {
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      height: "100vh",
+      minHeight: "100dvh",
+      padding: "20px",
       background: "#ECE5DD",
     }}>
       <div style={{
         background: "white",
-        padding: "40px",
+        padding: "24px 20px",
         borderRadius: "10px",
-        width: "350px",
+        width: "min(100%, 360px)",
         boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
       }}>
 

@@ -72,7 +72,7 @@ const styles = `
   --glow:rgba(124,58,237,0.25);
 }
 
-body{background:var(--bg0);font-family:'Outfit',sans-serif}
+body{background:var(--bg0);font-family:'Outfit',sans-serif;overflow-x:hidden}
 
 @keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -84,12 +84,43 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
-.app{display:flex;height:100vh;background:var(--bg0);overflow:hidden;position:relative}
+.app{display:flex;height:100dvh;min-height:100dvh;background:var(--bg0);overflow:hidden;position:relative}
 .app::before{
   content:'';position:absolute;inset:0;
   background:radial-gradient(ellipse 60% 50% at 15% 50%,rgba(124,58,237,.07) 0%,transparent 70%),
              radial-gradient(ellipse 40% 40% at 85% 20%,rgba(6,182,212,.05) 0%,transparent 60%);
   pointer-events:none;z-index:0
+}
+
+@media (max-width: 980px){
+  .app{flex-direction:column;height:auto;min-height:100dvh;overflow:auto}
+  .sidebar{width:min(88vw, 320px);max-height:none;border-right:none;border-bottom:none;position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);z-index:1100;transition:transform .2s ease}
+  .sidebar.open{transform:translateX(0)}
+  .chat-area{min-height:52vh}
+}
+
+@media (max-width: 640px){
+  .mobile-nav-btn{display:flex}
+  .sidebar-top{padding:14px 12px}
+  .tabs{gap:4px;padding:3px}
+  .tab{padding:7px 10px;font-size:11px}
+  .search-wrap{padding:8px 12px}
+  .contact-list{padding:6px 8px}
+  .contact{padding:8px;border-radius:12px}
+  .c-name{font-size:12px}
+  .c-sub{font-size:10px}
+  .sidebar-foot{padding:10px 12px}
+  .chat-head{padding:10px 12px;flex-wrap:wrap;gap:8px}
+  .head-name{font-size:14px}
+  .msgs{padding:14px 12px}
+  .bubble{max-width:88%;font-size:13px;padding:10px 12px}
+  .hactions{display:flex}
+  .ibar{padding:10px 12px;gap:8px;flex-wrap:wrap}
+  .msginput{min-width:0}
+  .reply-bar{padding:8px 12px;flex-wrap:wrap;gap:8px}
+  .recbar{flex-direction:column;align-items:flex-start;gap:8px}
+  .summary-card{margin:10px 12px 0}
+  .summary-btn{font-size:11px;padding:7px 10px}
 }
 
 .sidebar{width:310px;flex-shrink:0;background:linear-gradient(180deg,var(--bg1) 0%,rgba(13,13,26,0.96) 100%);border-right:1px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:1;backdrop-filter:blur(12px)}
@@ -140,7 +171,7 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif}
 .gnewbtn:hover{border-color:var(--accent);color:var(--accent3);background:rgba(124,58,237,.08)}
 .mcheck{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text1);margin-bottom:6px;cursor:pointer}
 
-.chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg0);position:relative;z-index:1;min-width:0}
+.chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg0);position:relative;z-index:1;min-width:0;min-height:0}
 .chat-head{padding:14px 24px;display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,rgba(18,18,42,0.95) 0%,rgba(13,13,26,0.95) 100%);border-bottom:1px solid var(--border);position:relative;animation:fadeIn .3s ease}
 .chat-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,.3),transparent)}
 .head-name{font-size:15px;font-weight:600;color:var(--text0)}
@@ -210,6 +241,9 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif}
 .sendbtn{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#A855F7);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all .2s;box-shadow:0 4px 14px rgba(124,58,237,.4)}
 .sendbtn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(124,58,237,.55)}
 .sendbtn:active{transform:scale(.96)}
+.mobile-nav-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text0);cursor:pointer}
+.mobile-backdrop{display:none;position:fixed;inset:0;background:rgba(2,4,12,0.6);z-index:1000}
+.mobile-backdrop.open{display:block}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text2);animation:fadeIn .5s ease;padding:24px}
 .empty-icon{font-size:56px;filter:drop-shadow(0 0 20px rgba(124,58,237,.3));background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .empty-title{font-size:18px;font-weight:600;color:var(--text1)}
@@ -252,6 +286,8 @@ export default function Chat() {
   const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem("user")));
 
   const [activeTab, setActiveTab] = useState("chats");
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [inputMessage, setInputMessage] = useState("");
@@ -320,6 +356,19 @@ export default function Chat() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   useEffect(() => { groupMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [groupMessages]);
+
+  useEffect(() => {
+    const updateView = () => {
+      const mobile = window.innerWidth <= 980;
+      setIsMobileView(mobile);
+      if (!mobile) setShowMobileSidebar(true);
+      else setShowMobileSidebar(false);
+    };
+
+    updateView();
+    window.addEventListener("resize", updateView);
+    return () => window.removeEventListener("resize", updateView);
+  }, []);
 
   const ensureAudioContext = () => {
     if (typeof window === "undefined") return null;
@@ -995,6 +1044,10 @@ const handleLogout = () => {
     <div className="app">
       <style>{styles}</style>
 
+      {isMobileView && (
+        <div className={`mobile-backdrop ${showMobileSidebar ? "open" : ""}`} onClick={() => setShowMobileSidebar(false)} />
+      )}
+
       {uploading && (
         <div className="uploading">
           <div className="uload-spinner"></div>
@@ -1027,11 +1080,16 @@ const handleLogout = () => {
       )}
 
       {/* SIDEBAR */}
-      <div className="sidebar">
+      <div className={`sidebar ${showMobileSidebar ? "open" : ""}`}>
         <div className="sidebar-top">
-          <div className="brand">
-            <div className="brand-dot"></div>
-            <span>CHAT APP</span>
+          <div className="brand" style={{ justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div className="brand-dot"></div>
+              <span>CHAT APP</span>
+            </div>
+            {isMobileView && (
+              <button className="mobile-nav-btn" onClick={() => setShowMobileSidebar(false)} aria-label="Close menu">✕</button>
+            )}
           </div>
 
           <div className="tabs">
@@ -1068,7 +1126,7 @@ const handleLogout = () => {
                 const isPinned = currentUser?.pinnedChats?.includes(g._id);
                 const isMuted = currentUser?.mutedChats?.includes(g._id);
                 return (
-                  <div key={g._id} className={`contact ${selectedGroup?._id === g._id ? "active" : ""}`} onClick={() => setSelectedGroup(g)}>
+                  <div key={g._id} className={`contact ${selectedGroup?._id === g._id ? "active" : ""}`} onClick={() => { setSelectedGroup(g); if (isMobileView) setShowMobileSidebar(false); }}>
                     {renderAvatar(g.name, null, 40)}
                     <div className="c-info">
                       <div className="c-name">
@@ -1093,7 +1151,7 @@ const handleLogout = () => {
             const isPinned = currentUser?.pinnedChats?.includes(u.name);
             const isMuted = currentUser?.mutedChats?.includes(u.name);
             return (
-              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => setSelectedUser(u)}>
+              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => { setSelectedUser(u); if (isMobileView) setShowMobileSidebar(false); }}>
                 <div className="av">
                   {renderAvatar(u.name, u.avatar, 40)}
                   <div className={`status-ring ${userIsOnline ? "online" : "offline"}`}></div>
@@ -1163,6 +1221,9 @@ const handleLogout = () => {
       {activeContact ? (
         <div className="chat-area">
           <div className="chat-head">
+            {isMobileView && (
+              <button className="mobile-nav-btn" onClick={() => setShowMobileSidebar(true)} aria-label="Open chats">☰</button>
+            )}
             <div>
               <div className="head-name">{selectedGroup ? `👥 ${selectedGroup.name}` : `👤 ${selectedUser.name}`}</div>
               <div className="head-status">
