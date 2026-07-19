@@ -171,8 +171,8 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif;overflow-x:hidden}
 .gnewbtn:hover{border-color:var(--accent);color:var(--accent3);background:rgba(124,58,237,.08)}
 .mcheck{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text1);margin-bottom:6px;cursor:pointer}
 
-.chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg0);position:relative;z-index:1;min-width:0;min-height:0}
-.chat-head{padding:14px 24px;display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,rgba(18,18,42,0.95) 0%,rgba(13,13,26,0.95) 100%);border-bottom:1px solid var(--border);position:relative;animation:fadeIn .3s ease}
+.chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg0);position:relative;z-index:1;min-width:0;min-height:0;height:100%}
+.chat-head{padding:14px 24px;display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,rgba(18,18,42,0.95) 0%,rgba(13,13,26,0.95) 100%);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;animation:fadeIn .3s ease}
 .chat-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,.3),transparent)}
 .head-name{font-size:15px;font-weight:600;color:var(--text0)}
 .head-status{font-size:11px;margin-top:2px;display:flex;align-items:center;gap:5px}
@@ -222,7 +222,7 @@ body{background:var(--bg0);font-family:'Outfit',sans-serif;overflow-x:hidden}
 .typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:floatDot .8s ease-in-out infinite}
 .typing-dots span:nth-child(2){animation-delay:.1s}
 .typing-dots span:nth-child(3){animation-delay:.2s}
-.footer{display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(13,13,26,0.95) 0%,rgba(10,10,20,0.96) 100%);border-top:1px solid var(--border)}
+.footer{display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(13,13,26,0.95) 0%,rgba(10,10,20,0.96) 100%);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:20}
 .reply-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:10px 20px;border-bottom:1px solid var(--border);animation:fadeSlideUp .15s ease}
 .rbar-info{border-left:3px solid var(--accent);padding-left:10px;border-radius:0}
 .rbar-title{font-size:10px;font-weight:600;color:var(--accent3);text-transform:uppercase;letter-spacing:.5px}
@@ -647,11 +647,24 @@ export default function Chat() {
 
   // WebRTC Calling Actions Pipeline Engine
   const initiateCall = async (withVideo = true) => {
+    if (!selectedUser?.name) {
+      alert("Select a contact before starting a call.");
+      return;
+    }
+
     setCallType(withVideo ? "video" : "audio");
     setCallingState("calling");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: withVideo, audio: true });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("This browser does not support media capture.");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: withVideo ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false
+      });
+
       localStreamRef.current = stream;
       setLocalStreamState(stream);
       setIsMuted(false);
@@ -675,11 +688,12 @@ export default function Chat() {
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      
+
       socket.emit("initiate_call", { to: selectedUser.name, from: currentUser.name, offer, video: withVideo });
     } catch (err) {
       console.error("Failed to capture local media stream properties:", err);
       cleanupCallTrack();
+      alert("Unable to start the call. Please allow microphone and camera access and try again.");
     }
   };
 
@@ -689,13 +703,20 @@ export default function Chat() {
     setCallingState("connected");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: callType === "video", audio: true });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("This browser does not support media capture.");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: callType === "video" ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false
+      });
+
       localStreamRef.current = stream;
       setLocalStreamState(stream);
       setIsMuted(false);
       setIsCameraOff(false);
-      
-      // Delay briefly to allow components overlays to register video tracking nodes cleanly
+
       setTimeout(async () => {
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
       }, 100);
@@ -723,6 +744,7 @@ export default function Chat() {
     } catch (err) {
       console.error("Failed to map dynamic answering connection protocols:", err);
       cleanupCallTrack();
+      alert("Unable to answer the call. Please allow microphone and camera access and try again.");
     }
   };
 
@@ -1047,6 +1069,22 @@ const handleLogout = () => {
     }));
   };
 
+  const openConversation = (contact, type) => {
+    if (type === "user") {
+      setSelectedUser(contact);
+      setSelectedGroup(null);
+    } else {
+      setSelectedGroup(contact);
+      setSelectedUser(null);
+    }
+    setReplyTo(null);
+    setEditingMessage(null);
+    if (isMobileView) {
+      setShowMobileSidebar(false);
+      setMobileView("chat");
+    }
+  };
+
   return (
     <div className="app">
       <style>{styles}</style>
@@ -1133,7 +1171,7 @@ const handleLogout = () => {
                 const isPinned = currentUser?.pinnedChats?.includes(g._id);
                 const isMuted = currentUser?.mutedChats?.includes(g._id);
                 return (
-                  <div key={g._id} className={`contact ${selectedGroup?._id === g._id ? "active" : ""}`} onClick={() => { setSelectedGroup(g); if (isMobileView) setShowMobileSidebar(false); }}>
+                  <div key={g._id} className={`contact ${selectedGroup?._id === g._id ? "active" : ""}`} onClick={() => openConversation(g, "group")}>
                     {renderAvatar(g.name, null, 40)}
                     <div className="c-info">
                       <div className="c-name">
@@ -1158,7 +1196,7 @@ const handleLogout = () => {
             const isPinned = currentUser?.pinnedChats?.includes(u.name);
             const isMuted = currentUser?.mutedChats?.includes(u.name);
             return (
-              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => { setSelectedUser(u); if (isMobileView) { setShowMobileSidebar(false); setMobileView("chat"); } }}>
+              <div key={u._id} className={`contact ${selectedUser?._id === u._id ? "active" : ""}`} onClick={() => openConversation(u, "user")}>
                 <div className="av">
                   {renderAvatar(u.name, u.avatar, 40)}
                   <div className={`status-ring ${userIsOnline ? "online" : "offline"}`}></div>
@@ -1225,9 +1263,9 @@ const handleLogout = () => {
       </div>
 
       {/* MAIN CHAT WINDOW CONTAINER */}
-      {(activeContact || !isMobileView) && (
+      {(isMobileView ? mobileView === "chat" : true) && (
         activeContact ? (
-        <div className="chat-area" style={isMobileView ? { display: mobileView === "chat" ? "flex" : "none" } : undefined}>
+        <div className="chat-area" style={isMobileView ? { display: "flex" } : undefined}>
           <div className="chat-head">
             {isMobileView && (
               <button className="mobile-nav-btn" onClick={() => { setShowMobileSidebar(true); setMobileView("list"); }} aria-label="Back to chats">←</button>
@@ -1390,11 +1428,13 @@ const handleLogout = () => {
           </div>
         </div>
         ) : (
-          <div className="empty">
-            <div className="empty-icon">📡</div>
-            <div className="empty-title">No Active Stream Target Selected</div>
-            <div className="empty-sub">Choose a room connection listing from the primary sidebar directory listing array.</div>
-          </div>
+          !isMobileView ? (
+            <div className="empty">
+              <div className="empty-icon">📡</div>
+              <div className="empty-title">No Active Stream Target Selected</div>
+              <div className="empty-sub">Choose a room connection listing from the primary sidebar directory listing array.</div>
+            </div>
+          ) : null
         )
       )}
     </div>
